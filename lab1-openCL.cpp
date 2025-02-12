@@ -2,7 +2,7 @@
 
 int main()
 {
-	const int power = 10;
+	const int power = 5;
 	const int g_cuNumItems = 1 << power;
 	const int a = 6;
 	const int b = 2;

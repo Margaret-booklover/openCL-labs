@@ -42,6 +42,10 @@ cl_device_id getDeviceInfo()
 	cl_int res1 = clGetDeviceInfo(deviceID, CL_DEVICE_NAME, size, static_cast<void*>(param_value), &param_value_size_ret);
 	printf("Device %i name is %s\n", deviceID, param_value);
 
+	size_t res;
+	res1 = clGetDeviceInfo(deviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, size, &res, &param_value_size_ret);
+	printf("Max work group size is %i \n", res);
+
 	delete[] pPlatforms;
 
 	cout << "-----------------------------------------" << endl;
