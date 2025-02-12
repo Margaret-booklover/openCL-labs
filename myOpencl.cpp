@@ -153,13 +153,11 @@ cl_program build_program(cl_context ctx, cl_device_id dev, const char* filename)
 	return program;
 }
 
-cl_event executeKernel(size_t uGlobalWorkSize, cl_command_queue queue, cl_kernel kernel)
+cl_event executeKernel(size_t* uGlobalWorkSize, size_t* uLocalWorkSize, cl_command_queue queue, cl_kernel kernel, cl_uint work_dim)
 {
 	cl_int errcode_ret = CL_SUCCESS;
 	cl_event event;
-	errcode_ret = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &uGlobalWorkSize, NULL, 0, NULL, &event);
-	clWaitForEvents(1, &event);
-	clFinish(queue);
+	errcode_ret = clEnqueueNDRangeKernel(queue, kernel, work_dim, NULL, uGlobalWorkSize, uLocalWorkSize, 0, NULL, &event);
 	if (errcode_ret != CL_SUCCESS)
 	{
 		switch (errcode_ret)
@@ -194,6 +192,8 @@ cl_event executeKernel(size_t uGlobalWorkSize, cl_command_queue queue, cl_kernel
 		printf("Error to create context");
 		exit(1);
 	}
+	clWaitForEvents(1, &event);
+	clFinish(queue);
 	return event;
 }
 

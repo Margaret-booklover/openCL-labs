@@ -155,6 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel.cl" />
+    <None Include="matMul.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myOpencl.h" />
