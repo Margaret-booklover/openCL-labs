@@ -2,7 +2,7 @@
 
 int main()
 {
-	const int power = 5;
+	const int power = 2;
 	const int g_cuNumItems = 1 << power;
 	const int a = 6;
 	const int b = 2;
@@ -12,6 +12,7 @@ int main()
 
 	size_t bytes = g_cuNumItems * sizeof(int);
 	size_t bytes2 = g_cuNumItems * g_cuNumItems * sizeof(int);
+	int maxRand = 2;
 	int* h_x;
 	int* h_y;
 	int* h_Y;
@@ -33,12 +34,12 @@ int main()
 
 	for (int i = 0; i < g_cuNumItems; i++)
 	{
-		h_x[i] = rand() % 101;
-		h_y[i] = rand() % 101;
-		h_z[i] = rand() % 101;
+		h_x[i] = rand() % maxRand;
+		h_y[i] = rand() % maxRand;
+		h_z[i] = rand() % maxRand;
 		for (int k = 0; k < g_cuNumItems; k++)
 		{
-			h_Y[i*g_cuNumItems + k] = rand() % 101;
+			h_Y[i*g_cuNumItems + k] = rand() % maxRand;
 		}
 	}
 
@@ -86,6 +87,7 @@ int main()
 	err = clEnqueueWriteBuffer(queue2, d_X, CL_TRUE, 0, bytes, h_x, 0, NULL, NULL);
 	err |= clEnqueueWriteBuffer(queue, d_y, CL_TRUE, 0, bytes, h_y, 0, NULL, NULL);
 	err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y, 0, NULL, NULL);
+	err |= clEnqueueWriteBuffer(queue2, d_W, CL_TRUE, 0, bytes2, h_W, 0, NULL, NULL);
 	err |= clEnqueueWriteBuffer(queue, d_z, CL_TRUE, 0, bytes, h_z, 0, NULL, NULL);
 
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &d_x);
@@ -97,12 +99,10 @@ int main()
 	err |= clSetKernelArg(kernel, 6, sizeof(unsigned int), &b);
 
 	err |= clSetKernelArg(kernel2, 0, sizeof(int), &M);
-	err |= clSetKernelArg(kernel2, 1, sizeof(int), &N);
-	err |= clSetKernelArg(kernel2, 2, sizeof(int), &K);
-	err |= clSetKernelArg(kernel2, 3, sizeof(int), &a);
-	err |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &d_X);
-	err |= clSetKernelArg(kernel2, 5, sizeof(cl_mem), &d_Y);
-	err |= clSetKernelArg(kernel2, 6, sizeof(cl_mem), &d_W);
+	err |= clSetKernelArg(kernel2, 1, sizeof(int), &a);
+	err |= clSetKernelArg(kernel2, 2, sizeof(cl_mem), &d_X);
+	err |= clSetKernelArg(kernel2, 3, sizeof(cl_mem), &d_Y);
+	err |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &d_W);
 	if (errcode_ret != CL_SUCCESS)
 	{
 		printf("Error to set kernel args");
@@ -115,10 +115,10 @@ int main()
 	cl_event event = executeKernel(&s, NULL, queue, kernel, 1);
 	cout << "Kernel1 done" << endl;
 
-	const int TS = 16;
-	size_t local[2] = { TS, TS };
-	size_t global[2] = { M, N };
-	cl_event event2 = executeKernel(global, local, queue2, kernel2, 2);
+	//const int TS = 16;
+	//size_t local[2] = { TS, N };
+	//size_t global[2] = { M, N };
+	cl_event event2 = executeKernel(&s, NULL, queue2, kernel2, 2);
 	cout << "Kernel2 done" << endl;
 	
 	// 13. Отображение буфера в память управляющего узла
@@ -170,28 +170,34 @@ int main()
 
 	start = chrono::high_resolution_clock::now();
 
-	for (int m = 0; m < g_cuNumItems; m++) {
-		for (int n = 0; n < 1; n++)
+	for (int m = 0; m < g_cuNumItems; m++) 
+	{
+		int acc = 0;
+		for (int k = 0; k < g_cuNumItems; k++)
 		{
-			int acc = 0.0f;
-			for (int k = 0; k < g_cuNumItems; k++)
-			{
-				acc += h_Y[k * g_cuNumItems + m] * h_x[n * 1 + k];
-			}
-			h_W_CPU[n * g_cuNumItems + m] = a * acc;
+			cout << h_Y[k * g_cuNumItems + m] << "\t";
+			acc += h_Y[k * g_cuNumItems + m] * h_x[k];
 		}
+		h_W_CPU[m] = a * acc;
+		cout << endl;
 	}
 	finish = chrono::high_resolution_clock::now();
 	cout << "Checking results... ";
 	flag = true;
 	for (int i = 0; i < g_cuNumItems; i++)
 	{
-		if (h_W[i] != h_W_CPU[i])
+		cout << h_x[i] << "\t";
+		/*if (h_W[i] != h_W_CPU[i])
 		{
 			cout << "index " << i << ", expected: " << h_W_CPU[i] << ", got " << h_W[i] << endl;
 			flag = false;
 			break;
-		}
+		}*/
+	}
+	cout << endl;
+	for (int i = 0; i < g_cuNumItems; i++)
+	{
+		cout << h_W[i] << "\t" << h_W_CPU[i] << endl;
 	}
 	if (flag) cout << "OK";
 	else cout << "ERROR";

@@ -193,7 +193,7 @@ cl_event executeKernel(size_t* uGlobalWorkSize, size_t* uLocalWorkSize, cl_comma
 		case CL_OUT_OF_HOST_MEMORY:  printf(" if there is a failure to allocate resources required by the OpenCL implementation on the host..\n");
 			break;
 		}
-		printf("Error to create context");
+		printf("Error to create kernel");
 		exit(1);
 	}
 	clWaitForEvents(1, &event);
