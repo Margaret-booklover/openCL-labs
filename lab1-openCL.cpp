@@ -1,4 +1,5 @@
 ﻿#include "myOpencl.h"
+#include <vector>
 
 int runProgram(size_t power, bool execKernel2)
 {
@@ -132,10 +133,11 @@ int runProgram(size_t power, bool execKernel2)
 	{
 		cout << "Matrix to vector multiplication on CPU" << endl;
 
-		float* h_Y;
+		//float* h_Y;
+		vector<float> h_Y(N * N);
 		float* h_W;
 		float* h_W_CPU;
-		h_Y = (float*)malloc(bytes2);
+		//h_Y = (float*)malloc(bytes2);
 		h_W = (float*)malloc(bytes);
 		h_W_CPU = (float*)malloc(bytes);
 
@@ -167,7 +169,7 @@ int runProgram(size_t power, bool execKernel2)
 
 		// 11. Установка буфера в качестве аргумента ядра
 		err = clEnqueueWriteBuffer(queue2, d_X, CL_TRUE, 0, bytes, h_x, 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y, 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y.data(), 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue2, d_W, CL_TRUE, 0, bytes2, h_W, 0, NULL, NULL);
 
 		err |= clSetKernelArg(kernel2, 0, sizeof(int), &N);
@@ -230,7 +232,7 @@ int runProgram(size_t power, bool execKernel2)
 		clReleaseCommandQueue(queue2);
 		clReleaseContext(context2);
 		clReleaseMemObject(d_Y);
-		free(h_Y);
+		//free(h_Y);
 		free(h_W);
 		free(h_W_CPU);
 	}
@@ -260,7 +262,7 @@ float main()
 	//const float power = 3;
 	for (size_t i = 15; i < 21; i++)
 	{
-		runProgram(i, false);
+		runProgram(i, true);
 		cout << endl << endl;
 	}
 }
