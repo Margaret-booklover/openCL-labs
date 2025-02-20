@@ -1,11 +1,11 @@
 __kernel void vecAdd(
-    __global int* x,
-    __global int* y,
-    __global int* z,
-    __global int* w,
-    const unsigned int n,
-    const int a,
-    const int b
+    __global float* x,
+    __global float* y,
+    __global float* z,
+    __global float* w,
+    int n,
+    float a,
+    float b
 )
 {                               
     int id = get_global_id(0);

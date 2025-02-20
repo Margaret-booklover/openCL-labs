@@ -1,133 +1,99 @@
 ﻿#include "myOpencl.h"
 
-int main()
+int runProgram(size_t power, bool execKernel2)
 {
-	const int power = 2;
-	const int g_cuNumItems = 1 << power;
-	const int a = 6;
-	const int b = 2;
-	const int M = g_cuNumItems;
-	const int K = g_cuNumItems;
-	const int N = 1;
+	int i, k, m;
+	size_t N = 1 << power;
+	const float a = 6;
+	const float b = 2;
 
-	size_t bytes = g_cuNumItems * sizeof(int);
-	size_t bytes2 = g_cuNumItems * g_cuNumItems * sizeof(int);
-	int maxRand = 2;
-	int* h_x;
-	int* h_y;
-	int* h_Y;
-	int* h_z;
-	int* h_w;
-	int* h_W;
-	int* h_w_CPU;
-	int* h_W_CPU;
+	size_t bytes = N * sizeof(float);
+	size_t bytes2 = N * N * sizeof(float);
+	//float maxRand = 2;
+	float* h_x;
+	float* h_y;
+	float* h_z;
+	float* h_w;
+	float* h_w_CPU;
 	srand(time(NULL));
 
-	h_x = (int*)malloc(bytes);
-	h_y = (int*)malloc(bytes);
-	h_Y = (int*)malloc(bytes2);
-	h_z = (int*)malloc(bytes);
-	h_w = (int*)malloc(bytes);
-	h_W = (int*)malloc(bytes);
-	h_w_CPU = (int*)malloc(bytes);
-	h_W_CPU = (int*)malloc(bytes);
+	h_x = (float*)malloc(bytes);
+	h_y = (float*)malloc(bytes);
+	h_z = (float*)malloc(bytes);
+	h_w = (float*)malloc(bytes);
+	h_w_CPU = (float*)malloc(bytes);
 
-	for (int i = 0; i < g_cuNumItems; i++)
+	for (i = 0; i < N; i++)
 	{
-		h_x[i] = rand() % maxRand;
-		h_y[i] = rand() % maxRand;
-		h_z[i] = rand() % maxRand;
-		for (int k = 0; k < g_cuNumItems; k++)
-		{
-			h_Y[i*g_cuNumItems + k] = rand() % maxRand;
-		}
+		h_x[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		h_y[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		h_z[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 	}
+	cout << "Vectors initialized" << endl;
 
 	cl_device_id deviceID = getDeviceInfo();
-	cout << "size is " << g_cuNumItems << endl;
+	cout << "power is " << power << ", size is " << N << endl;
 	
 	// 5. Создание контекста
 	cl_context context = createContext(deviceID);
-	cl_context context2 = createContext(deviceID);
 	
 	// 6. Создание очереди команд
 	cl_command_queue queue = createQueue(deviceID, context);
-	cl_command_queue queue2 = createQueue(deviceID, context2);
 	
 	// 7. Создание программы
 	// 8. Сборка программы
 	cl_program program = build_program(context, deviceID, PROGRAM_FILE);
-	cl_program program2 = build_program(context2, deviceID, PROGRAM_FILE2);
 	
 	// 9. Получение ядра
 	cl_kernel kernel = createKernel(program, "vecAdd");
-	cl_kernel kernel2 = createKernel(program2, "matMul");
 	
 	// 10. Создание буфера
-	cl_int errcode_ret = CL_SUCCESS;
+	cl_float errcode_ret = CL_SUCCESS;
 	// Device input buffers
 	cl_mem d_x, d_X, d_y, d_z, d_Y;
 	// Device output buffer
 	cl_mem d_w, d_W;
 	d_x = clCreateBuffer(context, CL_MEM_READ_ONLY, bytes, NULL, NULL);
-	d_X = clCreateBuffer(context2, CL_MEM_READ_ONLY, bytes, NULL, NULL);
 	d_y = clCreateBuffer(context, CL_MEM_READ_ONLY, bytes, NULL, NULL);
-	d_Y = clCreateBuffer(context2, CL_MEM_READ_ONLY, bytes2, NULL, NULL);
 	d_z = clCreateBuffer(context, CL_MEM_READ_ONLY, bytes, NULL, NULL);
 	d_w = clCreateBuffer(context, CL_MEM_WRITE_ONLY, bytes, NULL, NULL);
-	d_W = clCreateBuffer(context2, CL_MEM_WRITE_ONLY, bytes, NULL, NULL);
 	if (errcode_ret != CL_SUCCESS)
 	{
-		printf("Error to create buffer");
+		cout << "Error to create buffer" << endl;
 		return 0;
 	}
+	cout << "Buffer created" << endl;
 	
 	// 11. Установка буфера в качестве аргумента ядра
 	cl_int err = clEnqueueWriteBuffer(queue, d_x, CL_TRUE, 0, bytes, h_x, 0, NULL, NULL);
-	err = clEnqueueWriteBuffer(queue2, d_X, CL_TRUE, 0, bytes, h_x, 0, NULL, NULL);
 	err |= clEnqueueWriteBuffer(queue, d_y, CL_TRUE, 0, bytes, h_y, 0, NULL, NULL);
-	err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y, 0, NULL, NULL);
-	err |= clEnqueueWriteBuffer(queue2, d_W, CL_TRUE, 0, bytes2, h_W, 0, NULL, NULL);
 	err |= clEnqueueWriteBuffer(queue, d_z, CL_TRUE, 0, bytes, h_z, 0, NULL, NULL);
 
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &d_x);
 	err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &d_y);
 	err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &d_z);
 	err |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &d_w);
-	err |= clSetKernelArg(kernel, 4, sizeof(unsigned int), &g_cuNumItems);
-	err |= clSetKernelArg(kernel, 5, sizeof(unsigned int), &a);
-	err |= clSetKernelArg(kernel, 6, sizeof(unsigned int), &b);
+	err |= clSetKernelArg(kernel, 4, sizeof(int), &N);
+	err |= clSetKernelArg(kernel, 5, sizeof(float), &a);
+	err |= clSetKernelArg(kernel, 6, sizeof(float), &b);
 
-	err |= clSetKernelArg(kernel2, 0, sizeof(int), &M);
-	err |= clSetKernelArg(kernel2, 1, sizeof(int), &a);
-	err |= clSetKernelArg(kernel2, 2, sizeof(cl_mem), &d_X);
-	err |= clSetKernelArg(kernel2, 3, sizeof(cl_mem), &d_Y);
-	err |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &d_W);
 	if (errcode_ret != CL_SUCCESS)
 	{
-		printf("Error to set kernel args");
+		cout << "Error to set kernel args" << endl;
 		return 0;
 	}
-	cout << "Args set" << endl;
 	
 	// 12. Запуск ядра
-	size_t s = { g_cuNumItems };
+	size_t s = { N };
 	cl_event event = executeKernel(&s, NULL, queue, kernel, 1);
-	cout << "Kernel1 done" << endl;
-
-	//const int TS = 16;
-	//size_t local[2] = { TS, N };
-	//size_t global[2] = { M, N };
-	cl_event event2 = executeKernel(&s, NULL, queue2, kernel2, 2);
-	cout << "Kernel2 done" << endl;
+	//cout << "Kernel1 done" << endl;
 	
 	// 13. Отображение буфера в память управляющего узла
 	errcode_ret = CL_SUCCESS;
-	cl_int puData = clEnqueueReadBuffer(queue, d_w, CL_TRUE, 0, bytes, h_w, 0, NULL, NULL);
-	cl_int puData2 = clEnqueueReadBuffer(queue2, d_W, CL_TRUE, 0, bytes, h_W, 0, NULL, NULL);
+	cl_float puData = clEnqueueReadBuffer(queue, d_w, CL_TRUE, 0, bytes, h_w, 0, NULL, NULL);
 	if (errcode_ret != CL_SUCCESS)
 	{
-		printf("Error to create context");
+		cout << "Error to read buffer" << endl;
 		return 0;
 	}
 
@@ -136,72 +102,138 @@ int main()
 	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
 	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
 	double nanoSeconds = time_end - time_start;
-	printf("OpenCl Execution time is: %0.3f milliseconds \n", nanoSeconds / 1000000.0);
+	printf("OpenCl Execution time is : % 0.3f milliseconds \n", nanoSeconds / 1000000.0);
 
 	cout << "Vector addition on CPU" << endl;
 	auto start = chrono::high_resolution_clock::now();
 
-	for (int i = 0; i < g_cuNumItems; i++)
+	for (i = 0; i < N; i++)
 	{
 		h_w_CPU[i] = a * h_x[i] + b * h_y[i] * h_z[i];
 	}
 	auto finish = chrono::high_resolution_clock::now();
-	cout << "Checking results... ";
-	bool flag = true;
-	for (int i = 0; i < g_cuNumItems; i++)
-	{
-		if (h_w[i] != h_w_CPU[i])
-		{
-			cout << "index " << i << ", expected: " << h_w_CPU[i] << ", got " << h_w[i] << endl;
-			flag = false;
-			break;
-		}
-	}
-	if (flag) cout << "OK";
-	else cout << "ERROR";
+	bool flag;
+	//cout << "Checking results... ";
+	//flag = true;
+	//for (i = 0; i < N; i++)
+	//{
+	//	if (h_w[i] != h_w_CPU[i])
+	//	{
+	//		cout << "index " << i << ", expected: " << h_w_CPU[i] << ", got " << h_w[i] << endl;
+	//		flag = false;
+	//		break;
+	//	}
+	//}
+	//if (flag) cout << "OK";
+	//else cout << "ERROR";
 	cout << endl << "CPU Execution time is: " << (double)chrono::duration_cast<chrono::nanoseconds>(finish - start).count() << " nanoseconds\n" << endl;
 
-	cout << "Matrix to vector multiplication on CPU" << endl;
-
-	clGetEventProfilingInfo(event2, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
-	clGetEventProfilingInfo(event2, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
-	nanoSeconds = time_end - time_start;
-	printf("OpenCl Execution time is: %0.3f milliseconds \n", nanoSeconds / 1000000.0);
-
-	start = chrono::high_resolution_clock::now();
-
-	for (int m = 0; m < g_cuNumItems; m++) 
+	if (execKernel2)
 	{
-		int acc = 0;
-		for (int k = 0; k < g_cuNumItems; k++)
+		cout << "Matrix to vector multiplication on CPU" << endl;
+
+		float* h_Y;
+		float* h_W;
+		float* h_W_CPU;
+		h_Y = (float*)malloc(bytes2);
+		h_W = (float*)malloc(bytes);
+		h_W_CPU = (float*)malloc(bytes);
+
+		for (i = 0; i < N; i++)
 		{
-			cout << h_Y[k * g_cuNumItems + m] << "\t";
-			acc += h_Y[k * g_cuNumItems + m] * h_x[k];
+			for (k = 0; k < N; k++)
+			{
+				h_Y[i * N + k] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+			}
 		}
-		h_W_CPU[m] = a * acc;
-		cout << endl;
-	}
-	finish = chrono::high_resolution_clock::now();
-	cout << "Checking results... ";
-	flag = true;
-	for (int i = 0; i < g_cuNumItems; i++)
-	{
-		cout << h_x[i] << "\t";
-		/*if (h_W[i] != h_W_CPU[i])
+
+		cl_context context2 = createContext(deviceID);
+		cl_command_queue queue2 = createQueue(deviceID, context2);
+		cl_program program2 = build_program(context2, deviceID, PROGRAM_FILE2);
+		cl_kernel kernel2 = createKernel(program2, "matMul");
+		// Device input buffers
+		cl_mem d_X, d_Y;
+		// Device output buffer
+		cl_mem d_W;
+		d_X = clCreateBuffer(context2, CL_MEM_READ_ONLY, bytes, NULL, NULL);
+		d_Y = clCreateBuffer(context2, CL_MEM_READ_ONLY, bytes2, NULL, NULL);
+		d_W = clCreateBuffer(context2, CL_MEM_WRITE_ONLY, bytes, NULL, NULL);
+		if (errcode_ret != CL_SUCCESS)
 		{
-			cout << "index " << i << ", expected: " << h_W_CPU[i] << ", got " << h_W[i] << endl;
-			flag = false;
-			break;
-		}*/
+			cout << "Error to create buffer" << endl;
+			return 0;
+		}
+		cout << "Buffer created" << endl;
+
+		// 11. Установка буфера в качестве аргумента ядра
+		err = clEnqueueWriteBuffer(queue2, d_X, CL_TRUE, 0, bytes, h_x, 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y, 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue2, d_W, CL_TRUE, 0, bytes2, h_W, 0, NULL, NULL);
+
+		err |= clSetKernelArg(kernel2, 0, sizeof(int), &N);
+		err |= clSetKernelArg(kernel2, 1, sizeof(float), &a);
+		err |= clSetKernelArg(kernel2, 2, sizeof(cl_mem), &d_Y);
+		err |= clSetKernelArg(kernel2, 3, sizeof(cl_mem), &d_X);
+		err |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &d_W);
+
+		if (errcode_ret != CL_SUCCESS)
+		{
+			cout << "Error to set kernel args" << endl;
+			return 0;
+		}
+
+		cl_event event2 = executeKernel(&s, NULL, queue2, kernel2, 1);
+		//cout << "Kernel2 done" << endl;
+
+		// 13. Отображение буфера в память управляющего узла
+		errcode_ret = CL_SUCCESS;
+		cl_float puData2 = clEnqueueReadBuffer(queue2, d_W, CL_TRUE, 0, bytes, h_W, 0, NULL, NULL);
+		if (errcode_ret != CL_SUCCESS)
+		{
+			cout << "Error to read buffer" << endl;
+			return 0;
+		}
+
+		clGetEventProfilingInfo(event2, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
+		clGetEventProfilingInfo(event2, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
+		nanoSeconds = time_end - time_start;
+		printf("OpenCl Execution time is: %0.3f milliseconds \n", nanoSeconds / 1000000.0);
+
+		start = chrono::high_resolution_clock::now();
+
+		for (m = 0; m < N; m++)
+		{
+			float acc = 0;
+			for (k = 0; k < N; k++)
+			{
+				acc += h_Y[m * N + k] * h_x[k];
+			}
+			h_W_CPU[m] = a * acc;
+		}
+		finish = chrono::high_resolution_clock::now();
+		//cout << "Checking results... ";
+		//flag = true;
+		//for (i = 0; i < N; i++)
+		//{
+		//	if (h_W[i] != h_W_CPU[i])
+		//	{
+		//		cout << "index " << i << ", expected: " << h_W_CPU[i] << ", got " << h_W[i] << endl;
+		//		flag = false;
+		//		break;
+		//	}
+		//}
+		//if (flag) cout << "OK";
+		//else cout << "ERROR";
+		cout << endl << "CPU Execution time is: " << (double)chrono::duration_cast<chrono::nanoseconds>(finish - start).count() << " nanoseconds\n";
+		clReleaseKernel(kernel2);
+		clReleaseProgram(program2);
+		clReleaseCommandQueue(queue2);
+		clReleaseContext(context2);
+		clReleaseMemObject(d_Y);
+		free(h_Y);
+		free(h_W);
+		free(h_W_CPU);
 	}
-	cout << endl;
-	for (int i = 0; i < g_cuNumItems; i++)
-	{
-		cout << h_W[i] << "\t" << h_W_CPU[i] << endl;
-	}
-	if (flag) cout << "OK";
-	else cout << "ERROR";
-	cout << endl << "CPU Execution time is: " << (double)chrono::duration_cast<chrono::nanoseconds>(finish - start).count() << " nanoseconds\n";
 
 	
 	// 15. Завершение отображения буфера
@@ -220,5 +252,15 @@ int main()
 	free(h_y);
 	free(h_z);
 	free(h_w);
+	free(h_w_CPU);
 	return  0;
+}
+float main()
+{
+	//const float power = 3;
+	for (size_t i = 15; i < 21; i++)
+	{
+		runProgram(i, false);
+		cout << endl << endl;
+	}
 }
