@@ -1,12 +1,12 @@
 __kernel void matMul(
     int N, 
-    float a,
-    __global float* A,
-    __global float* B,
-    __global float* C
+    double a,
+    __global double* A,
+    __global double* B,
+    __global double* C
 ) 
 {
-    float sum = 0;
+    double sum = 0;
     int i = get_global_id(0); // row index
     for (int k = 0; k < N; k++)
     {

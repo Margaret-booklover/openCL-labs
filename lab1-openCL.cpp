@@ -5,34 +5,35 @@ int runProgram(size_t power, bool execKernel2)
 {
 	int i, k, m;
 	size_t N = 1 << power;
-	const float a = 6;
-	const float b = 2;
+	const double a = 6;
+	const double b = 2;
 
-	size_t bytes = N * sizeof(float);
-	size_t bytes2 = N * N * sizeof(float);
-	//float maxRand = 2;
-	float* h_x;
-	float* h_y;
-	float* h_z;
-	float* h_w;
-	float* h_w_CPU;
+	size_t bytes = N * sizeof(double);
+	size_t bytes2 = N * N * sizeof(double);
+	//double maxRand = 2;
+	double* h_x;
+	double* h_y;
+	double* h_z;
+	double* h_w;
+	double* h_w_CPU;
 	srand(time(NULL));
 
-	h_x = (float*)malloc(bytes);
-	h_y = (float*)malloc(bytes);
-	h_z = (float*)malloc(bytes);
-	h_w = (float*)malloc(bytes);
-	h_w_CPU = (float*)malloc(bytes);
+	h_x = (double*)malloc(bytes);
+	h_y = (double*)malloc(bytes);
+	h_z = (double*)malloc(bytes);
+	h_w = (double*)malloc(bytes);
+	h_w_CPU = (double*)malloc(bytes);
 
 	for (i = 0; i < N; i++)
 	{
-		h_x[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		h_y[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		h_z[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		h_x[i] = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+		h_y[i] = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+		h_z[i] = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
 	}
 	cout << "Vectors initialized" << endl;
 
 	cl_device_id deviceID = getDeviceInfo();
+
 	cout << "power is " << power << ", size is " << N << endl;
 	
 	// 5. Создание контекста
@@ -49,7 +50,7 @@ int runProgram(size_t power, bool execKernel2)
 	cl_kernel kernel = createKernel(program, "vecAdd");
 	
 	// 10. Создание буфера
-	cl_float errcode_ret = CL_SUCCESS;
+	cl_double errcode_ret = CL_SUCCESS;
 	// Device input buffers
 	cl_mem d_x, d_X, d_y, d_z, d_Y;
 	// Device output buffer
@@ -75,8 +76,8 @@ int runProgram(size_t power, bool execKernel2)
 	err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &d_z);
 	err |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &d_w);
 	err |= clSetKernelArg(kernel, 4, sizeof(int), &N);
-	err |= clSetKernelArg(kernel, 5, sizeof(float), &a);
-	err |= clSetKernelArg(kernel, 6, sizeof(float), &b);
+	err |= clSetKernelArg(kernel, 5, sizeof(double), &a);
+	err |= clSetKernelArg(kernel, 6, sizeof(double), &b);
 
 	if (errcode_ret != CL_SUCCESS)
 	{
@@ -91,7 +92,7 @@ int runProgram(size_t power, bool execKernel2)
 	
 	// 13. Отображение буфера в память управляющего узла
 	errcode_ret = CL_SUCCESS;
-	cl_float puData = clEnqueueReadBuffer(queue, d_w, CL_TRUE, 0, bytes, h_w, 0, NULL, NULL);
+	cl_double puData = clEnqueueReadBuffer(queue, d_w, CL_TRUE, 0, bytes, h_w, 0, NULL, NULL);
 	if (errcode_ret != CL_SUCCESS)
 	{
 		cout << "Error to read buffer" << endl;
@@ -133,21 +134,25 @@ int runProgram(size_t power, bool execKernel2)
 	{
 		cout << "Matrix to vector multiplication on CPU" << endl;
 
-		//float* h_Y;
-		vector<float> h_Y(N * N);
-		float* h_W;
-		float* h_W_CPU;
-		//h_Y = (float*)malloc(bytes2);
-		h_W = (float*)malloc(bytes);
-		h_W_CPU = (float*)malloc(bytes);
+		//double* h_Y;
+		vector<double>* h_Y = new vector<double>(N * N);
+		cout << "matrix created" << endl;
+		fill(h_Y->begin(), h_Y->end(), 5.2f);
+		cout << "matrix initialized" << endl;
 
-		for (i = 0; i < N; i++)
-		{
-			for (k = 0; k < N; k++)
-			{
-				h_Y[i * N + k] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-			}
-		}
+		double* h_W;
+		double* h_W_CPU;
+		//h_Y = (double*)malloc(bytes2);
+		h_W = (double*)malloc(bytes);
+		h_W_CPU = (double*)malloc(bytes);
+
+		//for (i = 0; i < N; i++)
+		//{
+		//	for (k = 0; k < N; k++)
+		//	{
+		//		h_Y[i * N + k] = static_cast <double> (rand()) / static_cast <double> (RAND_MAX);
+		//	}
+		//}
 
 		cl_context context2 = createContext(deviceID);
 		cl_command_queue queue2 = createQueue(deviceID, context2);
@@ -167,13 +172,19 @@ int runProgram(size_t power, bool execKernel2)
 		}
 		cout << "Buffer created" << endl;
 
+		/*d_Y = clCreateBuffer(
+			context,
+			CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+			sizeof(double) * N * N,
+			h_Y.data(), &err);*/
+
 		// 11. Установка буфера в качестве аргумента ядра
 		err = clEnqueueWriteBuffer(queue2, d_X, CL_TRUE, 0, bytes, h_x, 0, NULL, NULL);
-		err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y.data(), 0, NULL, NULL);
+		err |= clEnqueueWriteBuffer(queue2, d_Y, CL_TRUE, 0, bytes2, h_Y->data(), 0, NULL, NULL);
 		err |= clEnqueueWriteBuffer(queue2, d_W, CL_TRUE, 0, bytes2, h_W, 0, NULL, NULL);
 
 		err |= clSetKernelArg(kernel2, 0, sizeof(int), &N);
-		err |= clSetKernelArg(kernel2, 1, sizeof(float), &a);
+		err |= clSetKernelArg(kernel2, 1, sizeof(double), &a);
 		err |= clSetKernelArg(kernel2, 2, sizeof(cl_mem), &d_Y);
 		err |= clSetKernelArg(kernel2, 3, sizeof(cl_mem), &d_X);
 		err |= clSetKernelArg(kernel2, 4, sizeof(cl_mem), &d_W);
@@ -189,7 +200,7 @@ int runProgram(size_t power, bool execKernel2)
 
 		// 13. Отображение буфера в память управляющего узла
 		errcode_ret = CL_SUCCESS;
-		cl_float puData2 = clEnqueueReadBuffer(queue2, d_W, CL_TRUE, 0, bytes, h_W, 0, NULL, NULL);
+		cl_double puData2 = clEnqueueReadBuffer(queue2, d_W, CL_TRUE, 0, bytes, h_W, 0, NULL, NULL);
 		if (errcode_ret != CL_SUCCESS)
 		{
 			cout << "Error to read buffer" << endl;
@@ -203,15 +214,15 @@ int runProgram(size_t power, bool execKernel2)
 
 		start = chrono::high_resolution_clock::now();
 
-		for (m = 0; m < N; m++)
-		{
-			float acc = 0;
-			for (k = 0; k < N; k++)
-			{
-				acc += h_Y[m * N + k] * h_x[k];
-			}
-			h_W_CPU[m] = a * acc;
-		}
+		//for (m = 0; m < N; m++)
+		//{
+		//	double acc = 0;
+		//	for (k = 0; k < N; k++)
+		//	{
+		//		acc += h_Y[m * N + k] * h_x[k];
+		//	}
+		//	h_W_CPU[m] = a * acc;
+		//}
 		finish = chrono::high_resolution_clock::now();
 		//cout << "Checking results... ";
 		//flag = true;
@@ -232,6 +243,7 @@ int runProgram(size_t power, bool execKernel2)
 		clReleaseCommandQueue(queue2);
 		clReleaseContext(context2);
 		clReleaseMemObject(d_Y);
+		delete h_Y;
 		//free(h_Y);
 		free(h_W);
 		free(h_W_CPU);
@@ -257,10 +269,17 @@ int runProgram(size_t power, bool execKernel2)
 	free(h_w_CPU);
 	return  0;
 }
-float main()
+
+
+int main()
 {
-	//const float power = 3;
-	for (size_t i = 15; i < 21; i++)
+
+	/*int pow = 1 >> 15;
+	std::vector<double> h_Y(pow * pow);
+	cout << "matrix created" << endl;
+	fill(h_Y.begin(), h_Y.end(), 5.2f);
+	cout << "matrix initialized" << endl;*/
+	for (size_t i = 14; i < 15; i++)
 	{
 		runProgram(i, true);
 		cout << endl << endl;

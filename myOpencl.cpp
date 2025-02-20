@@ -46,6 +46,14 @@ cl_device_id getDeviceInfo()
 	res1 = clGetDeviceInfo(deviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, size, &res, &param_value_size_ret);
 	printf("Max work group size is %i \n", res);
 
+	cl_ulong deviceMemSize;
+	clGetDeviceInfo(deviceID, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &deviceMemSize, NULL);
+	cout << "Device global memory: " << deviceMemSize / (1024 * 1024) << " MB" << endl;
+
+	cl_ulong maxMemAllocSize;
+	clGetDeviceInfo(deviceID, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &maxMemAllocSize, NULL);
+	cout << "Max memory allocation size: " << maxMemAllocSize / (1024 * 1024) << " MB" << endl;
+
 	delete[] pPlatforms;
 
 	cout << "-----------------------------------------" << endl;
