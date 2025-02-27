@@ -28,6 +28,7 @@
   <ItemGroup>
     <None Include="kernel.cl" />
     <None Include="matMul.cl" />
+    <None Include="imgTest.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myOpencl.h">

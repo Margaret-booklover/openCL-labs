@@ -158,6 +158,7 @@
     <ClCompile Include="myOpencl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="imgTest.cl" />
     <None Include="kernel.cl" />
     <None Include="matMul.cl" />
   </ItemGroup>

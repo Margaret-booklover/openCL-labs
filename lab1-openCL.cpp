@@ -40,7 +40,7 @@ int runProgram(size_t power, bool execKernel2)
 	cl_context context = createContext(deviceID);
 	
 	// 6. Создание очереди команд
-	cl_command_queue queue = createQueue(deviceID, context);
+	cl_command_queue queue = createQueue(deviceID, context, 0);
 	
 	// 7. Создание программы
 	// 8. Сборка программы
@@ -155,7 +155,7 @@ int runProgram(size_t power, bool execKernel2)
 		//}
 
 		cl_context context2 = createContext(deviceID);
-		cl_command_queue queue2 = createQueue(deviceID, context2);
+		cl_command_queue queue2 = createQueue(deviceID, context2, 1);
 		cl_program program2 = build_program(context2, deviceID, PROGRAM_FILE2);
 		cl_kernel kernel2 = createKernel(program2, "matMul");
 		// Device input buffers

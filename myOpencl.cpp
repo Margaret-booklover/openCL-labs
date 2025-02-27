@@ -61,10 +61,14 @@ cl_device_id getDeviceInfo()
 	return deviceID;
 }
 
-cl_command_queue createQueue(cl_device_id deviceID, cl_context context)
+cl_command_queue createQueue(cl_device_id deviceID, cl_context context, int propId)
 {
 	cl_int errcode_ret = 0;
 	cl_queue_properties qprop[] = { CL_QUEUE_PROPERTIES, (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE, 0 };
+	if (propId == 2) 
+	{
+		cl_queue_properties qprop[] = {CL_QUEUE_PROPERTIES, (cl_command_queue_properties)CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE , 0 };
+	}
 	cl_command_queue queue = clCreateCommandQueueWithProperties(context, deviceID, qprop, &errcode_ret);
 	if (errcode_ret != CL_SUCCESS)
 	{
@@ -161,7 +165,7 @@ cl_program build_program(cl_context ctx, cl_device_id dev, const char* filename)
 		printf("Error to build program");
 		exit(1);
 	}
-
+	cout << "build program ok" << endl;
 	return program;
 }
 
@@ -228,7 +232,95 @@ cl_kernel createKernel(cl_program program, const char* programName)
 	cl_kernel kernel = clCreateKernel(program, programName, &errcode_ret);
 	if (errcode_ret != CL_SUCCESS)
 	{
-		printf("Error to create Kernel");
+		printf("Error to create Kernel %d", errcode_ret);
 		return 0;
 	}
+}
+
+Mat createImages(const char* filename, cl_mem* image1, cl_mem* image2, cl_context context)
+{
+	// чтение изображения
+	//  Create Image data formate
+	Mat image;
+	image = imread(filename, IMREAD_COLOR);   // Read the file
+	if (!image.data)                              // Check for invalid input
+	{
+		cout << "Could not open or find the image" << std::endl;
+		exit(-1);
+	}
+	namedWindow("Display window", WINDOW_AUTOSIZE);// Create a window for display.
+	imshow("Display window", image);                   // Show our image inside it.
+	waitKey(0);
+
+	// чтение типа изображения
+	int image_type = image.type();
+	uchar depth = ((image_type)&CV_MAT_DEPTH_MASK);
+	uchar chans = ((((image_type)&CV_MAT_CN_MASK) >> CV_CN_SHIFT) + 1);
+
+	// преобразование в формат типа изображения в формат OpenCL
+	cl_image_format img_fmt;
+	img_fmt.image_channel_order = CL_RGB;
+	img_fmt.image_channel_data_type = CL_UNSIGNED_INT8;
+
+	string r, a;
+	switch (depth) {
+	case CV_8U:  img_fmt.image_channel_data_type = CL_UNSIGNED_INT8;   r = "CV_8U"; break;
+	case CV_8S:  img_fmt.image_channel_data_type = CL_SIGNED_INT8;    r = "CV_8S"; break;
+	case CV_16U: img_fmt.image_channel_data_type = CL_UNSIGNED_INT16;   r = "CV_16U";  break;
+	case CV_16S: img_fmt.image_channel_data_type = CL_SIGNED_INT16;   r = "CV_16S";  break;
+	case CV_32S: img_fmt.image_channel_data_type = CL_SIGNED_INT32;   r = "CV_32S";  break;
+	case CV_32F: img_fmt.image_channel_data_type = CL_FLOAT;   r = "CV_32F"; break;
+	case CV_64F: img_fmt.image_channel_data_type = CL_FLOAT;   r = "CV_64F"; break;
+	default:     img_fmt.image_channel_data_type = CL_UNSIGNED_INT8;  r = "CV_8U"; break;
+	}
+	switch (chans) {
+	case 1: img_fmt.image_channel_order = CL_INTENSITY; break;
+	case 2: img_fmt.image_channel_order = CL_RG; break;
+	case 3: img_fmt.image_channel_order = CL_RGB; break;
+	case 4: img_fmt.image_channel_order = CL_RGBA; break;
+	default:img_fmt.image_channel_order = CL_RGBA; break;
+	}
+	r += "C";
+	r += (chans + '0');
+	cout << "Mat is of type " << r << " and should be accessed with " << a << endl;
+	cout << "Mat size is: cols " << image.cols << " rows " << image.rows << " total " << image.total() << endl;
+
+	// копирование изображение в буфер
+	const int size = image.cols * image.rows * 4;
+	unsigned char* buffer = (unsigned char*)calloc(size, sizeof(unsigned char));
+	for (int i = 0; i < image.cols; ++i) {
+		for (int j = 0; j < image.rows; ++j) {
+			for (int k = 0; k < chans; ++k) {
+				buffer[4 * (j * image.cols + i) + k] = image.data[chans * (j * image.cols + i) + k];
+			}
+		}
+	}
+
+	cl_int errcode_ret;
+	cl_image_desc desc;
+	desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+	desc.image_width = image.cols;
+	desc.image_height = image.rows;
+	desc.image_row_pitch = 0;
+	desc.image_slice_pitch = 0;
+	desc.num_mip_levels = 0;
+	desc.num_samples = 0;
+	desc.buffer = NULL;
+
+	img_fmt.image_channel_order = CL_RGBA;
+	img_fmt.image_channel_data_type = CL_UNSIGNED_INT8;
+	*image1 = clCreateImage(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &img_fmt, &desc, buffer, &errcode_ret);
+	if (errcode_ret != CL_SUCCESS) {
+		printf("Cannon CreateImage from host ptr");
+		exit(0);
+	}
+
+	*image2 = clCreateImage(context, CL_MEM_READ_WRITE, &img_fmt, &desc, NULL, &errcode_ret);
+	if (errcode_ret != CL_SUCCESS) {
+		printf("Cannon CreateImage for result\n");
+		exit(0);
+	}
+
+	if (buffer) free(buffer);
+	return image;
 }
