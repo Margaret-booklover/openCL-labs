@@ -271,17 +271,17 @@ int runProgram(size_t power, bool execKernel2)
 }
 
 
-int main()
-{
-
-	/*int pow = 1 >> 15;
-	std::vector<double> h_Y(pow * pow);
-	cout << "matrix created" << endl;
-	fill(h_Y.begin(), h_Y.end(), 5.2f);
-	cout << "matrix initialized" << endl;*/
-	for (size_t i = 14; i < 15; i++)
-	{
-		runProgram(i, true);
-		cout << endl << endl;
-	}
-}
+//int main()
+//{
+//
+//	/*int pow = 1 >> 15;
+//	std::vector<double> h_Y(pow * pow);
+//	cout << "matrix created" << endl;
+//	fill(h_Y.begin(), h_Y.end(), 5.2f);
+//	cout << "matrix initialized" << endl;*/
+//	for (size_t i = 14; i < 15; i++)
+//	{
+//		runProgram(i, true);
+//		cout << endl << endl;
+//	}
+//}

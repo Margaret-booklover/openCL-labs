@@ -21,6 +21,9 @@
     <ClCompile Include="myOpencl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lab2-openCL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel.cl" />
