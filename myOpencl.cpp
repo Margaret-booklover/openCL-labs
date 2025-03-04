@@ -35,24 +35,24 @@ cl_device_id getDeviceInfo()
 	}
 	cl_device_id deviceID;
 	cl_uint uNumGPU;
-	clGetDeviceIDs(pPlatforms[platform_id], CL_DEVICE_TYPE_DEFAULT/*CL_DEVICE_TYPE_GPU*/, 1, &deviceID, &uNumGPU);
+	clGetDeviceIDs(pPlatforms[platform_id], /*CL_DEVICE_TYPE_DEFAULT*/CL_DEVICE_TYPE_GPU, 1, &deviceID, &uNumGPU);
 
 	// 4. Получение информации о CL устройстве
-	param_value_size_ret = 0;
-	cl_int res1 = clGetDeviceInfo(deviceID, CL_DEVICE_NAME, size, static_cast<void*>(param_value), &param_value_size_ret);
-	printf("Device %i name is %s\n", deviceID, param_value);
+	//param_value_size_ret = 0;
+	//cl_int res1 = clGetDeviceInfo(deviceID, CL_DEVICE_NAME, size, static_cast<void*>(param_value), &param_value_size_ret);
+	//printf("Device %i name is %s\n", deviceID, param_value);
 
-	size_t res;
-	res1 = clGetDeviceInfo(deviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, size, &res, &param_value_size_ret);
-	printf("Max work group size is %i \n", res);
+	//size_t res;
+	//res1 = clGetDeviceInfo(deviceID, CL_DEVICE_MAX_WORK_GROUP_SIZE, size, &res, &param_value_size_ret);
+	//printf("Max work group size is %i \n", res);
 
-	cl_ulong deviceMemSize;
-	clGetDeviceInfo(deviceID, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &deviceMemSize, NULL);
-	cout << "Device global memory: " << deviceMemSize / (1024 * 1024) << " MB" << endl;
+	//cl_ulong deviceMemSize;
+	//clGetDeviceInfo(deviceID, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &deviceMemSize, NULL);
+	//cout << "Device global memory: " << deviceMemSize / (1024 * 1024) << " MB" << endl;
 
-	cl_ulong maxMemAllocSize;
-	clGetDeviceInfo(deviceID, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &maxMemAllocSize, NULL);
-	cout << "Max memory allocation size: " << maxMemAllocSize / (1024 * 1024) << " MB" << endl;
+	//cl_ulong maxMemAllocSize;
+	//clGetDeviceInfo(deviceID, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &maxMemAllocSize, NULL);
+	//cout << "Max memory allocation size: " << maxMemAllocSize / (1024 * 1024) << " MB" << endl;
 
 	delete[] pPlatforms;
 

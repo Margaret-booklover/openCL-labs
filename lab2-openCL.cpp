@@ -10,7 +10,7 @@ Mat createMat(T* data, int rows, int cols, int chs = 1) {
 
 int main()
 {
-	const char* filename = "D:\\rita\\studyspace\\lab1-openCL\\forest.bmp";
+	const char* filename = "forest.bmp";
 
 	cl_device_id deviceID = getDeviceInfo();
 

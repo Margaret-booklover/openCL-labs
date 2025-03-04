@@ -107,13 +107,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\rita\studyspace\OpenCL\sdk\include;D:\rita\studyspace\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\rita\studyspace\OpenCL\sdk\include;D:\rita\studyspace\opencv\build\include;C:\Users\rita\Desktop\лабы\пирп\OpenCL\sdk\include;C:\Users\rita\Desktop\лабы\пирп\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>OpenCL.lib;opencv_world420d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\rita\studyspace\opencv\build\x64\vc15\lib;D:\rita\studyspace\OpenCL\sdk\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\rita\Desktop\лабы\пирп\OpenCL\sdk\lib\x64;C:\Users\rita\Desktop\лабы\пирп\opencv\build\x64\vc15\lib;D:\rita\studyspace\opencv\build\x64\vc15\lib;D:\rita\studyspace\OpenCL\sdk\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
