@@ -153,13 +153,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bolvanka.cpp" />
     <ClCompile Include="lab1-openCL.cpp" />
     <ClCompile Include="lab2-openCL.cpp" />
+    <ClCompile Include="lab3-openCL.cpp" />
     <ClCompile Include="myOpencl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="convolution.cl" />
     <None Include="imgTest.cl" />
     <None Include="kernel.cl" />
+    <None Include="localCon.cl" />
     <None Include="matMul.cl" />
   </ItemGroup>
   <ItemGroup>

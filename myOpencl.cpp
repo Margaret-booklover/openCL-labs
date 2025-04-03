@@ -274,11 +274,11 @@ Mat createImages(const char* filename, cl_mem* image1, cl_mem* image2, cl_contex
 	default:     img_fmt.image_channel_data_type = CL_UNSIGNED_INT8;  r = "CV_8U"; break;
 	}
 	switch (chans) {
-	case 1: img_fmt.image_channel_order = CL_INTENSITY; break;
-	case 2: img_fmt.image_channel_order = CL_RG; break;
-	case 3: img_fmt.image_channel_order = CL_RGB; break;
-	case 4: img_fmt.image_channel_order = CL_RGBA; break;
-	default:img_fmt.image_channel_order = CL_RGBA; break;
+	case 1: img_fmt.image_channel_order = CL_INTENSITY; cout << "intensity" << endl; break;
+	case 2: img_fmt.image_channel_order = CL_RG; cout << "CL_RG" << endl; break;
+	case 3: img_fmt.image_channel_order = CL_RGB; cout << "CL_RGB" << endl; break;
+	case 4: img_fmt.image_channel_order = CL_RGBA; cout << "CL_RGBA" << endl; break;
+	default:img_fmt.image_channel_order = CL_RGBA; cout << "intensity" << endl; break;
 	}
 	r += "C";
 	r += (chans + '0');
@@ -318,6 +318,70 @@ Mat createImages(const char* filename, cl_mem* image1, cl_mem* image2, cl_contex
 	*image2 = clCreateImage(context, CL_MEM_READ_WRITE, &img_fmt, &desc, NULL, &errcode_ret);
 	if (errcode_ret != CL_SUCCESS) {
 		printf("Cannon CreateImage for result\n");
+		exit(0);
+	}
+
+	if (buffer) free(buffer);
+	return image;
+}
+
+Mat createRGBAImages(const char* filename, cl_mem* image1, cl_mem* image2, cl_context context)
+{
+	Mat image;
+	image = imread("forest.bmp", IMREAD_COLOR);
+	if (!image.data) {
+		cout << "Could not open or find the image" << std::endl;
+		exit(-1);
+	}
+	cout << "Image have read" << std::endl;
+	//namedWindow("Display window", WINDOW_AUTOSIZE);
+	//imshow("Display window", image);
+	//waitKey(0);
+
+	Mat imageRGBA;
+	cvtColor(image, imageRGBA, COLOR_BGR2RGBA);
+
+	// Проверка формата изображения
+	if (imageRGBA.channels() != 4) {
+		std::cerr << "Image is not in RGBA format!" << std::endl;
+		exit(-1);
+	}
+
+	// Копирование данных в буфер
+	const int size = image.cols * image.rows * 4;
+	unsigned char* buffer = (unsigned char*)calloc(size, sizeof(unsigned char));
+	memcpy(buffer, imageRGBA.data, size);
+
+	// Проверка первых нескольких пикселей
+	for (int i = 0; i < 10; ++i) {
+		printf("Pixel %d: R=%d, G=%d, B=%d, A=%d\n", i,
+			buffer[4 * i], buffer[4 * i + 1], buffer[4 * i + 2], buffer[4 * i + 3]);
+	}
+
+	cl_image_format img_fmt;
+	cl_int errcode_ret;
+	img_fmt.image_channel_order = CL_RGBA;
+	img_fmt.image_channel_data_type = CL_UNSIGNED_INT8;
+
+	cl_image_desc desc;
+	desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+	desc.image_width = image.cols;
+	desc.image_height = image.rows;
+	desc.image_row_pitch = 0;
+	desc.image_slice_pitch = 0;
+	desc.num_mip_levels = 0;
+	desc.num_samples = 0;
+	desc.buffer = NULL;
+
+	*image1 = clCreateImage(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &img_fmt, &desc, buffer, &errcode_ret);
+	if (errcode_ret != CL_SUCCESS) {
+		printf("Cannot CreateImage from host ptr");
+		exit(0);
+	}
+
+	*image2 = clCreateImage(context, CL_MEM_WRITE_ONLY, &img_fmt, &desc, NULL, &errcode_ret);
+	if (errcode_ret != CL_SUCCESS) {
+		printf("Cannot CreateImage for result\n");
 		exit(0);
 	}
 

@@ -6,6 +6,8 @@
 #define PROGRAM_FILE "kernel.cl"
 #define PROGRAM_FILE2 "matMul.cl"
 #define IMG_TEST_PROGRAM "imgTest.cl"
+#define CONVOLUTION_PROGRAM "convolution.cl"
+#define CONVOLUTION_PROGRAM1 "localCon.cl"
 #include <ctime>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +17,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <string>
+#include <cmath>
 using namespace cv;
 using namespace std;
 
@@ -26,3 +30,4 @@ cl_context createContext(cl_device_id deviceID);
 cl_event executeKernel(size_t* uGlobalWorkSize, size_t* uLocalWorkSize, cl_command_queue queue, cl_kernel kernel, cl_uint work_dim);
 cl_kernel createKernel(cl_program program, const char* programName);
 Mat createImages(const char* filename, cl_mem* image1, cl_mem* image2, cl_context context);
+Mat createRGBAImages(const char* filename, cl_mem* image1, cl_mem* image2, cl_context context);

@@ -24,11 +24,19 @@
     <ClCompile Include="lab2-openCL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lab3-openCL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bolvanka.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="kernel.cl" />
     <None Include="matMul.cl" />
     <None Include="imgTest.cl" />
+    <None Include="convolution.cl" />
+    <None Include="localCon.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myOpencl.h">

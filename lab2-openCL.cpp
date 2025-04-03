@@ -8,8 +8,9 @@ Mat createMat(T* data, int rows, int cols, int chs = 1) {
 	return mat;
 }
 
-int main()
+int lab2()
 {
+	cout << "Lab2" << endl;
 	const char* filename = "forest.bmp";
 
 	cl_device_id deviceID = getDeviceInfo();
@@ -78,35 +79,3 @@ int main()
 	clReleaseContext(context);
 	return  0;
 }
-
-
-
-//#include <opencv2/opencv.hpp>
-//#include <iostream>
-//#include <io.h>
-//
-//
-//int main() {
-//    // Путь к изображению
-//    std::string imagePath = "D:\\rita\\studyspace\\lab1-openCL\\forest.bmp";
-//
-//    if (_access(imagePath.c_str(), 0) != 0) { // 0 проверяет существование файла
-//        std::cout << "File does not exist: " << imagePath << std::endl;
-//        return -1;
-//    }
-//
-//    // Загружаем изображение
-//    cv::Mat image = cv::imread(imagePath);
-//    if (image.empty()) {
-//        std::cout << "Failed to load image from path: " << imagePath << std::endl;
-//        return -1;
-//    }
-//
-//    // Отображаем изображение
-//    cv::imshow("Test", image);
-//
-//    // Ждем нажатия клавиши
-//    cv::waitKey(0);
-//
-//    return 0;
-//}
