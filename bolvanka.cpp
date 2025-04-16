@@ -30,7 +30,7 @@ void generateGaussianKernel(float* kernel, int kernelSize, float sigma) {
     }
 }
 
-int main()
+int bolvanka()
 {
     for (int i = 2; i < 17; i++)
     {

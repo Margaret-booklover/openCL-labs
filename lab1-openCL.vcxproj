@@ -105,15 +105,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\rita\studyspace\OpenCL\sdk\include;D:\rita\studyspace\opencv\build\include;C:\Users\rita\Desktop\лабы\пирп\OpenCL\sdk\include;C:\Users\rita\Desktop\лабы\пирп\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Microsoft SDKs\MPI\Include;D:\rita\studyspace\OpenCL\sdk\include;D:\rita\studyspace\opencv\build\include;C:\Users\rita\Desktop\лабы\пирп\OpenCL\sdk\include;C:\Users\rita\Desktop\лабы\пирп\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>OpenCL.lib;opencv_world420d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\rita\Desktop\лабы\пирп\OpenCL\sdk\lib\x64;C:\Users\rita\Desktop\лабы\пирп\opencv\build\x64\vc15\lib;D:\rita\studyspace\opencv\build\x64\vc15\lib;D:\rita\studyspace\OpenCL\sdk\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenCL.lib;opencv_world420d.lib;msmpi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft SDKs\MPI\Lib\x64;C:\Users\rita\Desktop\лабы\пирп\OpenCL\sdk\lib\x64;C:\Users\rita\Desktop\лабы\пирп\opencv\build\x64\vc15\lib;D:\rita\studyspace\opencv\build\x64\vc15\lib;D:\rita\studyspace\OpenCL\sdk\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,6 +157,7 @@
     <ClCompile Include="lab1-openCL.cpp" />
     <ClCompile Include="lab2-openCL.cpp" />
     <ClCompile Include="lab3-openCL.cpp" />
+    <ClCompile Include="lab4-mpi.cpp" />
     <ClCompile Include="myOpencl.cpp" />
   </ItemGroup>
   <ItemGroup>
