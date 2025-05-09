@@ -158,6 +158,7 @@
     <ClCompile Include="lab2-openCL.cpp" />
     <ClCompile Include="lab3-openCL.cpp" />
     <ClCompile Include="lab4-mpi.cpp" />
+    <ClCompile Include="lab5-mpi.cpp" />
     <ClCompile Include="myOpencl.cpp" />
   </ItemGroup>
   <ItemGroup>

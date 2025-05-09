@@ -8,7 +8,7 @@ double f(double x)
 	return 1 / (1 + x * x);
 }
 
-int main(int argc, char* argv[])
+int lab4(int argc, char* argv[])
 {
 	double pi, sum, sum_odd, sum_even, term, h, error, start_time, end_time;
 	int myrank, nprocs, n, i, j;
